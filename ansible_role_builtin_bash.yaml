@@ -1,0 +1,32 @@
+# change to wsl and root user with `wsl -u root`
+# or include `become_method: su` and run with `sudo ...`
+# run with `ansible-playbook ansible_role_builtin_bash.yaml -vvv`
+
+# find . -name "ansible*"
+
+---
+- name: Ansible role test
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    my_var: ansible
+    source_dir: ../A1
+
+  tasks:
+    - name: Bash find command
+      shell:
+        executable: bash
+        cmd: |
+          find . -name '{{ my_var }}*'
+      become: yes
+      become_method: su
+
+    - name: Bash cd command
+      shell:
+        executable: bash
+        cmd: |
+          cd {{ source_dir + '/src/' }}
+      become: yes
+      become_method: su

@@ -1,0 +1,24 @@
+# change to wsl and root user with `wsl -u root`
+# or include `become_method: su` and run with `sudo ...`
+# run with `ansible-playbook ansible_role_builtin_make.yaml -vvv`
+
+# find . -name "ansible*"
+
+---
+- name: Ansible role test
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ci_dev_drv_nfp_source_dir: ../A2
+
+  tasks:
+    - name: Build some file
+      make:
+        chdir: ../A2
+        target: test_prepare
+      environment:
+        KBUILD_EXTRA_SYMBOLS: "{{ci_dev_drv_nfp_source_dir}}/src/Module.symvers"
+      become: yes
+      become_method: su

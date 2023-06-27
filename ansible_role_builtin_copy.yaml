@@ -1,0 +1,30 @@
+# change to wsl and root user with `wsl -u root`
+# or include `become_method: su` and run with `sudo ...`
+# run with `ansible-playbook ansible_role_builtin_copy.yaml -vvv`
+---
+- name: Ansible role test
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ci_dev_drv_type: 'dut'
+    ci_dev_drv_test: true
+    ci_dev_drv_nfp_source_dir: ../A1
+    ci_dev_drv_nfp_test_dir: ../A2
+
+  tasks:
+    - name: Copy nfp_export from test dir to source dir
+      ansible.builtin.copy:
+        src: >-
+          {{ ci_dev_drv_nfp_source_dir + '/src/nfpcore/nfp_export.py' }}
+        dest: >-
+          {{ ci_dev_drv_nfp_test_dir + '/src/nfpcore/nfp_export.py' }}
+        follow: yes
+        mode: preserve
+      become: yes
+      become_method: su
+      when: >-
+        ci_dev_drv_type == 'dut' and
+        ci_dev_drv_test
+
