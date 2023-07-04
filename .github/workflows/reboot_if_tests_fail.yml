@@ -48,6 +48,7 @@ jobs:
 
       - name: Upload test logs to Azure
         run: echo "Upload test logs to Azure"
+        if: always()
 
       - name: Reboot if tests failed
         if: >-
