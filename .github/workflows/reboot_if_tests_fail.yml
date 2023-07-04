@@ -1,0 +1,38 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Driver regression tests
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  regression-tests:  # This workflow contains this single job
+    name: 'Driver Tests'
+    runs-on: ubuntu-latest  # The type of runner that the job will run on
+    timeout-minutes: 7
+    env:
+      test_results: true
+      head_ref: ${{ github.head_ref }}
+      ref_name: ${{ github.ref_name }}
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Run tests
+        id: tests
+        if: not(env.test_results)
+        run: |
+          echo "Test results failed with value: ${{ env.test_results }}"
+          exit 1
+
+      - name: Upload test logs to Azure
+        run: echo "Upload test logs to Azure"
+
+      - name: Reboot if tests failed
+        if: >-
+          steps.tests.conclusion == 'failure'
+        run: echo "Should reboot"
