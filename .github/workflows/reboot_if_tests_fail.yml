@@ -38,5 +38,5 @@ jobs:
 
       - name: Reboot if tests failed
         if: >-
-          steps.tests.conclusion == 'failure'
+          steps.tests.outcome == 'failure'
         run: echo "Should reboot"
