@@ -6,6 +6,11 @@ name: Driver regression tests
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      test_results:
+        description: 'True for tests pass, flase for fail'
+        type: boolean
+        required: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -14,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest  # The type of runner that the job will run on
     timeout-minutes: 7
     env:
-      test_results: true
       head_ref: ${{ github.head_ref }}
       ref_name: ${{ github.ref_name }}
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -24,9 +28,9 @@ jobs:
 
       - name: Run tests
         id: tests
-        if: not(env.test_results)
+        if: ${{ inputs.test_results }} 
         run: |
-          echo "Test results failed with value: ${{ env.test_results }}"
+          echo "Test results failed with value: ${{ inputs.test_results }}"
           exit 1
 
       - name: Upload test logs to Azure
