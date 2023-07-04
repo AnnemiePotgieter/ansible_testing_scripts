@@ -28,7 +28,7 @@ jobs:
 
       - name: Run tests
         id: tests
-        if: ${{ inputs.test_results }} 
+        if: ${{ !inputs.test_results }} 
         run: |
           echo "Test results failed with value: ${{ inputs.test_results }}"
           exit 1
