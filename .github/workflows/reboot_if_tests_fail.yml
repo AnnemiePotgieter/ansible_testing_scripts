@@ -52,5 +52,5 @@ jobs:
 
       - name: Reboot if tests failed
         if: >-
-          ${{ failure() && steps.tests.conclusion == 'failure' }}
+          failure() && steps.tests.conclusion == 'failure'
         run: echo "Should reboot"
