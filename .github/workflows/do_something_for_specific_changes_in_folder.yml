@@ -3,14 +3,6 @@ name: Workflow specific for changes per folder
 on:
   workflow_dispatch:
     inputs:
-      driver_ver:
-        type: string
-        default: 'SOURCE_VER:my_src_version,TEST_VER:my_test_version'
-        required: false
-        description: >-
-          Source and test code version/branch to use. The version should
-          be specified as "SOURCE_VER:<version/branch>,TEST_VER:<version/branch>"
-          (E.g. SOURCE_VER:release-23.07.1,TEST_VER:main)
       drv_revision:
         description: Branch/ref/tag of nfp-drv-kmods to test
         type: string
