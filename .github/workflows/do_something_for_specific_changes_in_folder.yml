@@ -5,7 +5,7 @@ on:
     inputs:
       driver_ver:
         type: string
-        default: 'SOURCE_VER:release-23.07.1,TEST_VER:main'
+        default: 'SOURCE_VER:my_src_version,TEST_VER:my_test_version'
         required: false
         description: >-
           Source and test code version/branch to use. The version should
@@ -78,25 +78,48 @@ jobs:
           driver_source = driver_dict.get('SOURCE_VER', '${{ inputs.driver_source_ver }}')
           driver_test = driver_dict.get('TEST_VER', '${{ inputs.driver_test_ver }}')
 
+          # Print the values for debugging purposes
+          print(f"changed_src: ${{ steps.changed_files.outputs.changed_src }}")
+          print(f"changed_tests: ${{ steps.changed_files.outputs.changed_tests }}")
+          print(f"driver_dict: {driver_dict}")
+          print(f"driver_source: {driver_source}")
+          print(f"driver_test: {driver_test}")
+
+
           if ("${{ steps.changed_files.outputs.changed_src }}" == "yes" and
                 "${{ steps.changed_files.outputs.changed_tests }}" == "no"):
             with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
               github_env.write(f"DRIVER_SOURCE=${{ inputs.drv_revision }}\n")
               github_env.write(f"DRIVER_TEST={driver_test}\n")
+            print(f"src changed")
+            print(f"DRIVER_SOURCE=${{ inputs.drv_revision }}")
+            print(f"DRIVER_TEST={driver_test}")
           elif ("${{ steps.changed_files.outputs.changed_tests }}" == "yes" and
                   "${{ steps.changed_files.outputs.changed_src }}" == "no"):
             with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
               github_env.write(f"DRIVER_SOURCE={driver_source}\n")
               github_env.write(f"DRIVER_TEST=${{ inputs.drv_revision }}\n")
+            print(f"test changed")
+            print(f"DRIVER_SOURCE={driver_source}")
+            print(f"DRIVER_TEST=${{ inputs.drv_revision }}")
           elif ("${{ steps.changed_files.outputs.changed_tests }}" == "yes" and
                   "${{ steps.changed_files.outputs.changed_src }}" == "yes"):
             with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
               github_env.write(f"DRIVER_SOURCE=${{ inputs.drv_revision }}\n")
               github_env.write(f"DRIVER_TEST=${{ inputs.drv_revision }}\n")
+            print(f"both changed")
+            print(f"DRIVER_SOURCE=${{ inputs.drv_revision }}")
+            print(f"DRIVER_TEST=${{ inputs.drv_revision }}")
           else:
             with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
               github_env.write(f"DRIVER_SOURCE={driver_source}\n")
               github_env.write(f"DRIVER_TEST={driver_test}\n")
+            print(f"none changed")
+            print(f"DRIVER_SOURCE={driver_source}")
+            print(f"DRIVER_TEST={driver_test}")
+
+# ... (rest of the workflow)
+
 
       # - name: Output
       #   run: |
