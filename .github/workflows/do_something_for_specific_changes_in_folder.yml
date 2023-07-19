@@ -11,6 +11,10 @@ on:
           Source and test code version/branch to use. The version should
           be specified as "SOURCE_VER:<version/branch>,TEST_VER:<version/branch>"
           (E.g. SOURCE_VER:release-23.07.1,TEST_VER:main)
+      drv_revision:
+        description: Branch/ref/tag of nfp-drv-kmods to test
+        type: string
+        default: current_branch
       driver_source_ver:
         type: string
         default: 'release-23.07.1'
