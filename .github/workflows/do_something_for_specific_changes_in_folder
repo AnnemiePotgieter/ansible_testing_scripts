@@ -1,0 +1,101 @@
+name: Workflow specific for changes per folder
+
+on:
+  workflow_dispatch:
+    inputs:
+      driver_ver:
+        type: string
+        default: 'SOURCE_VER:release-23.07.1,TEST_VER:main'
+        required: false
+        description: >-
+          Source and test code version/branch to use. The version should
+          be specified as "SOURCE_VER:<version/branch>,TEST_VER:<version/branch>"
+          (E.g. SOURCE_VER:release-23.07.1,TEST_VER:main)
+      driver_source_ver:
+        type: string
+        default: 'release-23.07.1'
+        required: false
+        description: >-
+          Version/Branch of driver source code to use.
+      driver_test_ver:
+        type: string
+        default: 'main'
+        required: false
+        description: >-
+          Version/Branch of driver test code to use.
+
+jobs:
+
+  prepare:
+    name: 'Prepare'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout reference repo
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          repository: AnnemiePotgieter/ansible_testing_scripts
+          ref: ${{ github.head_ref || github.ref_name }}
+          # token: ${{ secrets.GHUB_TOKEN }}
+          path: repo-ref
+          fetch-depth: 0
+
+      - name: Obtain files that have been changed
+        if: github.event_name == 'workflow_dispatch'
+        id: changed_files
+        shell: bash
+        run: |
+          cd repo-ref
+          # Obtain files that have been changed.
+          changed_files=($(git diff --name-only origin/main | tr '\n' ' '))
+          # Determine if the src and tests directories were changed.
+          if grep -q "src/" <<<"${changed_files[*]}"; then
+            echo "changed_src=yes" >> $GITHUB_OUTPUT
+          else
+            echo "changed_src=no" >> $GITHUB_OUTPUT
+          fi
+          if grep -q "tests/" <<<"${changed_files[*]}"; then
+            echo "changed_tests=yes" >> $GITHUB_OUTPUT
+          else
+            echo "changed_tests=no" >> $GITHUB_OUTPUT
+          fi
+          cd ..
+          rm -rf repo-ref
+
+      - name: Set driver source and test versions
+        if: github.event_name == 'workflow_dispatch'
+        shell: python3 {0}
+        run: |
+          import sys
+          import os as operating_sys
+          driver_dict = {}
+          if '${{ inputs.driver_ver }}':
+            for driver in '${{ inputs.driver_ver }}'.split(','):
+              driver_dict[driver.split(':')[0]] = driver.split(':')[1]
+
+          driver_source = driver_dict.get('SOURCE_VER', '${{ inputs.driver_source_ver }}')
+          driver_test = driver_dict.get('TEST_VER', '${{ inputs.driver_test_ver }}')
+
+          if ("${{ steps.changed_files.outputs.changed_src }}" == "yes" and
+                "${{ steps.changed_files.outputs.changed_tests }}" == "no"):
+            with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
+              github_env.write(f"DRIVER_SOURCE=${{ inputs.drv_revision }}\n")
+              github_env.write(f"DRIVER_TEST={driver_test}\n")
+          elif ("${{ steps.changed_files.outputs.changed_tests }}" == "yes" and
+                  "${{ steps.changed_files.outputs.changed_src }}" == "no"):
+            with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
+              github_env.write(f"DRIVER_SOURCE={driver_source}\n")
+              github_env.write(f"DRIVER_TEST=${{ inputs.drv_revision }}\n")
+          elif ("${{ steps.changed_files.outputs.changed_tests }}" == "yes" and
+                  "${{ steps.changed_files.outputs.changed_src }}" == "yes"):
+            with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
+              github_env.write(f"DRIVER_SOURCE=${{ inputs.drv_revision }}\n")
+              github_env.write(f"DRIVER_TEST=${{ inputs.drv_revision }}\n")
+          else:
+            with open(operating_sys.environ['GITHUB_ENV'], 'a') as github_env:
+              github_env.write(f"DRIVER_SOURCE={driver_source}\n")
+              github_env.write(f"DRIVER_TEST={driver_test}\n")
+
+      # - name: Output
+      #   run: |
+      #     echo "Output source: ${{ DRIVER_SOURCE }} and test: ${{ DRIVER_TEST }}""
+      #     exit 1
