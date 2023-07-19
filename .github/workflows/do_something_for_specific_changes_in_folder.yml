@@ -30,10 +30,11 @@ jobs:
     name: 'Prepare'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+
 
       - name: Checkout reference repo
         if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v3
         with:
           repository: AnnemiePotgieter/ansible_testing_scripts
           ref: ${{ github.head_ref || github.ref_name }}
